@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity
     int counter = 0;
     MotionEvent e;
     Marker m;
+    LatLng point;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
