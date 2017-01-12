@@ -44,16 +44,25 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.inputwindowTitle);
+        AlertDialog dialog = builder.create();
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LatLng l = new LatLng(60.689504, 17.141277);
-               mMap.addMarker(new MarkerOptions().position(l)
-                    .title("Test")
-                    .snippet("Test"));
+                mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                    public void onMapClick(LatLng point) {
+                        MarkerOptions marker = new MarkerOptions()
+                                .position(new LatLng(point.latitude, point.longitude));
+                        mMap.addMarker(marker);
+                        markerList.add(marker);
+                        builder.show();
+                    }
+                });
             }
-        });
+            });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -116,8 +125,22 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.normal:
+                mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                break;
+            case R.id.satellite:
+                mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                break;
+            case R.id.terrain:
+                mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+                break;
+            case R.id.hybrid:
+                mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                break;
+            case R.id.none:
+                mMap.setMapType(GoogleMap.MAP_TYPE_NONE);
+                break;
         }
 
         return super.onOptionsItemSelected(item);
