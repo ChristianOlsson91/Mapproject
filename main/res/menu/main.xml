@@ -2,8 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
+        android:id="@+id/normal"
+        android:title="@string/normal" />
+    <item
+        android:id="@+id/satellite"
+        android:title="@string/satellite" />
+    <item
+        android:id="@+id/terrain"
+        android:title="@string/terrain" />
+    <item
+        android:id="@+id/hybrid"
+        android:title="@string/hybrid" />
+    <item
+        android:id="@+id/none"
+        android:title="@string/none" />
 </menu>

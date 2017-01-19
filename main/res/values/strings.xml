@@ -4,11 +4,19 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-   <string name="normal">Normal</string>
+    <string name="normal">Normal</string>
     <string name="satellite">Satellite</string>
     <string name="terrain">Terrain</string>
     <string name="hybrid">Hybrid</string>
     <string name="none">None</string>
+    <string-array name="marker">
+        <item>Marker 1</item>
+        <item>Marker 2</item>
+    </string-array>
 
     <string name="inputwindowTitle">Namn på markören</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>
