@@ -3,6 +3,7 @@ package project.locationsandattractions;
 import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.app.ListActivity;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -35,6 +36,7 @@ import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
 import android.view.MotionEvent;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
@@ -65,17 +67,17 @@ import java.util.ListIterator;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
-       implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, DialogInterface {
+       implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, DialogInterface, Serializable {
 
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
-    ArrayList<Marker> markers;
+    List<Marker> markers;
     ArrayList<String> arrayList;
     Marker marker1;
     Marker marker2;
     List<LatLng> points = new ArrayList<>();
-    private List<Marker> mMarkers;
-    private Database db = new Database(this);
+    private List<Marker> dbMarkers;
+    private Database db;
 
     public void dismiss() {
     }
@@ -102,13 +104,14 @@ public class MainActivity extends AppCompatActivity
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        //populate(mMap);
+        db = new Database(this);
+       // populate(mMap);
         Toast.makeText(this, " " + db.getPoints().size(), Toast.LENGTH_LONG).show();
     }
 
     public List<Marker> populate(GoogleMap googleMap) {
         mMap = googleMap;
+        markers = new ArrayList<Marker>();
         LatLng location1 = new LatLng(60.674881, 17.141954);
         LatLng location2 = new LatLng(60.673462, 17.142620);
         marker1 = mMap.addMarker(new MarkerOptions().position(location1)
@@ -120,15 +123,20 @@ public class MainActivity extends AppCompatActivity
                 .snippet("Restaurangen Church Street Saloon"));
         markers.add(marker1);
         markers.add(marker2);
-        db.storeMarkers(markers, markers.get(0).getTitle(), markers.get(0).getSnippet());
-        db.storeMarkers(markers, markers.get(1).getTitle(), markers.get(1).getSnippet());
+        db.storeMarkers(markers);
+        dbMarkers = db.getMarker();
+        for (int i = 0; i<dbMarkers.size(); i++) {
+            LatLng latlng = new LatLng(dbMarkers.get(i).getPosition().latitude, dbMarkers.get(i).getPosition().longitude);
+            mMap.addMarker(new MarkerOptions().position(latlng).title(dbMarkers.get(i).getTitle()).snippet(dbMarkers.get(i).getSnippet()));
+        }
         return markers;
     }
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         mMap = googleMap;
-        mMarkers = getMarkers();
+        //populate(mMap);
+        dbMarkers = getMarkers();
         System.out.println(db.getPoints().size());
 
        /* for(int i = 0; i<db.getPoints().size(); i++) {
@@ -139,7 +147,7 @@ public class MainActivity extends AppCompatActivity
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(60.674880, 17.141273), 14.0f));
 
         // Set the latitude and longitude for a place and add a marker
-       LatLng location1 = new LatLng(60.674881, 17.141954);
+   /*    LatLng location1 = new LatLng(60.674881, 17.141954);
         LatLng location2 = new LatLng(60.673462, 17.142620);
         marker1 = mMap.addMarker(new MarkerOptions().position(location1)
                 .title("Brända Bocken")
@@ -152,16 +160,24 @@ public class MainActivity extends AppCompatActivity
         markers = new ArrayList<Marker>();
         markers.add(marker1);
         markers.add(marker2);
-
+*
         //db.storeMarkers(markers);
 
         points.add(marker1.getPosition());
         points.add(marker2.getPosition());
-
+*/
   //     db.storePoints(points);
 
-        for( Marker marker : mMarkers) {
-            mMap.addMarker(new MarkerOptions().position(marker.getPosition()));
+        LatLng location1 = new LatLng(60.674881, 17.141954);
+
+    //    marker1 = mMap.addMarker(new MarkerOptions().position(location1)
+      //          .title("Brända Bocken")
+        //        .snippet("Restaurangen Brända Bocken på Stortorget"));
+
+        for( Marker marker : dbMarkers) {
+            LatLng latLngTemp = marker.getPosition();
+
+            mMap.addMarker(new MarkerOptions().position(latLngTemp));
         }
         mMap.setIndoorEnabled(false);
 
@@ -198,13 +214,13 @@ public class MainActivity extends AppCompatActivity
                                 marker.setSnippet(textbox.getText().toString());
                             }
                         });
-                        points.add(marker.getPosition());
+                       // points.add(marker.getPosition());
 
                         dialogbox.show();
-                        markers.add(marker);
-                        db.storePoints(points);
+                        dbMarkers.add(marker);
+                        //db.storePoints(points);
                         System.out.println(db.getPoints().size());
-                      db.storeMarkers(markers, markers.get(2).getTitle(), markers.get(2).getSnippet());
+                      db.storeMarkers(dbMarkers);
                     }
                 });
             }
@@ -232,18 +248,21 @@ public class MainActivity extends AppCompatActivity
 
         return markers;
     }
+    public void storeMarkers(List<Marker> markers) {
+       db.storeMarkers(markers);
+    }
 
     @Override
     protected void onPause() {
         super.onPause();
-        db.storePoints(points);
-        db.close();
+        Toast.makeText(this, " " + db.getPoints().size(), Toast.LENGTH_LONG).show();
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        db.storePoints(points);
+
         db.close();
     }
 
@@ -252,8 +271,7 @@ public class MainActivity extends AppCompatActivity
         super.onStop();
         MapStateManager mgr = new MapStateManager(this);
       //  mgr.saveMapState(mMap);
-        db.storePoints(points);
-        db.close();
+
     }
 
     @Override
@@ -265,14 +283,14 @@ public class MainActivity extends AppCompatActivity
             CameraUpdate update = CameraUpdateFactory.newCameraPosition(position);
             mMap.moveCamera(update);
         }*/
-        db.storePoints(points);
-        db.close();
+
+       // db.close();
     }
 
     @Override
         protected void onRestart() {
             super.onRestart();
-            db.storePoints(points);
+
             System.out.println(db.getPoints().size());
         }
 
@@ -339,7 +357,7 @@ public class MainActivity extends AppCompatActivity
             if (id == R.id.mapview) {
 
             } else if (id == R.id.markerlist) {
-                Intent intent = new Intent(this, IntentActivity.class);
+                Intent intent = new Intent(this, MarkerActivity.class);
                 startActivity(intent);
             }
 

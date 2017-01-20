@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Point;
+import android.widget.Toast;
 
 import com.google.android.gms.fitness.request.DeleteAllUserDataRequest;
 import com.google.android.gms.maps.GoogleMap;
@@ -28,24 +29,29 @@ public class Database extends SQLiteOpenHelper {
     public static final String COL_Y = "Y";
     public static final String COL_TITLE = "TITLE";
     public static final String COL_TEXT = "TEXT";
-    public static final String SQL_CREATE = "CREATE TABLE " + DATA_POINTS + " ( " + COL_ID + " INTEGER PRIMARY KEY NOT NULL, " + COL_X + " REAL NOT NULL," + COL_Y + " REAL NOT NULL )"; /* + COL_TITLE + " TEXT," +
-            COL_TEXT + " TEXT )";*/
+    public static final String SQL_CREATE = "CREATE TABLE " + DATA_POINTS + " ( " + COL_ID + " INTEGER PRIMARY KEY NOT NULL, " + COL_X + " REAL," + COL_Y + " REAL," + COL_TITLE + " TEXT," + COL_TEXT + " TEXT );";
     public static final String SQL_DELETE = "DROP TABLE " + DATA_POINTS;
 
     public Database(Context context) {
-        super(context, "markerArray.db", null, 1);
+        super(context, "markerArray.db", null, 3);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         //String sql = String.format("CREATE TABLE %s ( %s INTEGER PRIMARY KEY NOT NULL, %s INTEGER NOT NULL, %s INTEGER NOT NULL", DATA_POINTS, COL_ID, COL_X, COL_Y);
+
         db.execSQL(SQL_CREATE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        //db.execSQL(SQL_DELETE);
-        //onCreate(db);
+        db.execSQL(SQL_DELETE);
+        onCreate(db);
+    }
+
+    @Override
+    public void onDowngrade(SQLiteDatabase db, int oldVersoin, int newVersion) {
+        onCreate(db);
     }
 
     public void storePoints(List<LatLng> points) {
@@ -56,7 +62,7 @@ public class Database extends SQLiteOpenHelper {
 
         for(LatLng point : points) {
             ContentValues values = new ContentValues();
-            values.put(COL_ID, i);
+           // values.put(COL_ID, i);
             values.put(COL_X, point.latitude);
             values.put(COL_Y, point.longitude);
             db.insert(DATA_POINTS, null, values);
@@ -74,7 +80,7 @@ public class Database extends SQLiteOpenHelper {
 
         while (cursor.moveToNext()){
             double x = cursor.getDouble(1);
-            double y = cursor.getInt(2);
+            double y = cursor.getDouble(2);
 
             points.add(new LatLng(x, y));
         }
@@ -83,7 +89,7 @@ public class Database extends SQLiteOpenHelper {
         return points;
     }
 
-    public void storeMarkers(List<Marker> markers, String title, String text) {
+    public void storeMarkers(List<Marker> markers) {
         SQLiteDatabase db = getWritableDatabase();
         db.delete(DATA_POINTS, null, null);
 
@@ -94,35 +100,33 @@ public class Database extends SQLiteOpenHelper {
             values.put(COL_ID, i);
             values.put(COL_X, m.getPosition().latitude);
             values.put(COL_Y, m.getPosition().longitude);
-            values.put(COL_TITLE, title);
-            values.put(COL_TEXT, text);
+            values.put(COL_TITLE, m.getTitle());
+            values.put(COL_TEXT, m.getSnippet());
             db.insert(DATA_POINTS, null, values);
             i++;
         }
+
         db.close();
+        System.out.print("StoreMarkers" + getPoints().size());
     }
 
-   /* public String getColTitle() {
+   public List<Marker> getMarker() {
+        List<Marker> markers = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
-        String  sql = String.format("SELECT * FROM %s", COL_TITLE);
+        String  sql = String.format("SELECT * FROM %s", DATA_POINTS);
         Cursor cursor = db.rawQuery(sql, null);
-        String t = "";
+
         while (cursor.moveToNext()){
-            t = cursor.getString(0);
+
+            double lat = cursor.getDouble(1);
+            double lon = cursor.getDouble(2);
+            String title = cursor.getString(3);
+            String text = cursor.getString(4);
+            //Marker marker = new Marker(new MarkerOptions().position(new LatLng(lat, lon)).title(title).snippet(text));
+            //markers.add(cursor, )
         }
 
         db.close();
-        return t;
+        return markers;
     }
-
-    public String getColText() {
-        SQLiteDatabase db = getReadableDatabase();
-        String  sql = String.format("SELECT * FROM %s", COL_TEXT);
-        Cursor cursor = db.rawQuery(sql, null);
-        String t = "";
-        while (cursor.moveToNext()){
-            t = cursor.getString(0);
-        }
-        return t;
-    }*/
 }
